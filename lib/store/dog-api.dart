@@ -11,21 +11,33 @@ abstract class _DogAPIStoreBase with Store {
   @observable
   Dog _dogAPI;
 
+  @observable
+  List<String> _dogAPIBreads = ConstsAPI.BREADS;
+
+ @observable
+ String _currentBread;
+
   @computed
   Dog get dogAPI => _dogAPI;
 
+  @computed
+  String get currentBread => _currentBread;
+
+  @computed
+  List<String> get dogAPIBreads => _dogAPIBreads;
+
   @action
-  fetchPokemonList() {
+  fetchDogList(id) {
     _dogAPI = null;
-    loadDogAPI().then((dogList) {
-      print(dogList);
+    _currentBread = _dogAPIBreads[id];
+    loadDogAPI(id).then((dogList) {
       _dogAPI = dogList;
     });
   }
 
-  Future<Dog> loadDogAPI() async {
+  Future<Dog> loadDogAPI(id) async {
     try {
-      final response = await http.get(ConstsAPI.API);
+      final response = await http.get('${ConstsAPI.API}/${_dogAPIBreads[id]}/images');
       var decodeJson = jsonDecode(response.body);
       return Dog.fromJson(decodeJson);
     } catch (error, stacktrace) {

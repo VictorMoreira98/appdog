@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:appdog/store/dog-api.dart';
 import 'package:appdog/widget/item/dog_item.dart';
 import 'package:flutter/material.dart';
@@ -14,12 +16,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   DogAPIStore _dogAPIStore;
+  Random random;
+  String _currentDog;
+
   @override
   void initState() {
     super.initState();
+    random = new Random();
     _dogAPIStore = GetIt.instance<DogAPIStore>();
-    if (_dogAPIStore.dogAPI == null) {
-      _dogAPIStore.fetchPokemonList();
+    if (_dogAPIStore.dogAPI == null || _dogAPIStore.dogAPIBreads == null) {
+      var idDog = random.nextInt(_dogAPIStore.dogAPIBreads.length);
+      _currentDog = _dogAPIStore.dogAPIBreads[idDog];
+      _dogAPIStore.fetchDogList(idDog);
     }
   }
 
@@ -30,34 +38,67 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.brown,
           title: Center(child: Text('AppDog')),
         ),
-        body: Observer(
-            name: 'ListDogHomeScreen',
-            builder: (BuildContext context) {
-              return _dogAPIStore.dogAPI != null
-                  ? AnimationLimiter(
-                      child: GridView.builder(
-                          physics: BouncingScrollPhysics(),
-                          padding: EdgeInsets.all(12),
-                          addAutomaticKeepAlives: true,
-                          gridDelegate:
-                              new SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2),
-                          itemCount: _dogAPIStore.dogAPI.message.length,
-                          itemBuilder: (context, index) {
-                            return AnimationConfiguration.staggeredGrid(
-                              position: index,
-                              duration: const Duration(milliseconds: 375),
-                              columnCount: 2,
-                              child: ScaleAnimation(
-                                child: DogItem(
-                                  imageDog: _dogAPIStore.dogAPI.message[index]
-                                      .toString(),
-                                ),
-                              ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: InkWell(
+                child: Ink(
+                  width: 100,
+                  height: 70,
+                  decoration: BoxDecoration(
+                      color: Colors.brown[200],
+                      borderRadius: BorderRadius.circular(10)),
+                  child: Center(
+                      child: Observer(
+                          builder: (_) {
+                            return Text(
+                               _dogAPIStore.currentBread,
+                              style: TextStyle(color: Colors.white),
                             );
-                          }),
-                    )
-                  : Center(child: CircularProgressIndicator());
-            }));
+                          })),
+                ),
+                onTap: () => {
+                  _dogAPIStore.fetchDogList(
+                      random.nextInt(_dogAPIStore.dogAPIBreads.length)),
+                },
+                borderRadius: BorderRadius.circular(10),
+                splashColor: Colors.brown,
+              ),
+            ),
+            Expanded(
+              child: Observer(
+                  name: 'ListDogHomeScreen',
+                  builder: (BuildContext context) {
+                    return _dogAPIStore.dogAPI != null
+                        ? AnimationLimiter(
+                            child: GridView.builder(
+                                physics: BouncingScrollPhysics(),
+                                padding: EdgeInsets.all(12),
+                                addAutomaticKeepAlives: true,
+                                gridDelegate:
+                                    new SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2),
+                                itemCount: _dogAPIStore.dogAPI.message.length,
+                                itemBuilder: (context, index) {
+                                  return AnimationConfiguration.staggeredGrid(
+                                    position: index,
+                                    duration: const Duration(milliseconds: 375),
+                                    columnCount: 2,
+                                    child: ScaleAnimation(
+                                      child: DogItem(
+                                        imageDog: _dogAPIStore
+                                            .dogAPI.message[index]
+                                            .toString(),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                          )
+                        : Center(child: CircularProgressIndicator());
+                  }),
+            ),
+          ],
+        ));
   }
 }
