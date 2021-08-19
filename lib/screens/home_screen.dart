@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:appdog/screens/detail_screen.dart';
 import 'package:appdog/store/dog-api.dart';
 import 'package:appdog/widget/item/dog_item.dart';
 import 'package:flutter/material.dart';
@@ -49,14 +50,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   decoration: BoxDecoration(
                       color: Colors.brown[200],
                       borderRadius: BorderRadius.circular(10)),
-                  child: Center(
-                      child: Observer(
-                          builder: (_) {
-                            return Text(
-                               _dogAPIStore.currentBread,
-                              style: TextStyle(color: Colors.white),
-                            );
-                          })),
+                  child: Center(child: Observer(builder: (_) {
+                    return Text(
+                      _dogAPIStore.currentBread,
+                      style: TextStyle(color: Colors.white),
+                    );
+                  })),
                 ),
                 onTap: () => {
                   _dogAPIStore.fetchDogList(
@@ -86,10 +85,38 @@ class _HomeScreenState extends State<HomeScreen> {
                                     duration: const Duration(milliseconds: 375),
                                     columnCount: 2,
                                     child: ScaleAnimation(
-                                      child: DogItem(
-                                        imageDog: _dogAPIStore
-                                            .dogAPI.message[index]
-                                            .toString(),
+                                      child: InkWell(
+                                        child: Hero(
+                                          tag: "dogHero${index}",
+                                          child: Column(
+                                            children: [
+                                              DogItem(
+                                                imageDog: _dogAPIStore
+                                                    .dogAPI.message[index]
+                                                    .toString(),
+                                                heigth: 0.2,
+                                                width: 0.4,
+                                              ),
+                                            ],
+                                          ),
+                                          transitionOnUserGestures: true,
+                                        ),
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              CustomPageRoute(
+                                                builder:
+                                                    (BuildContext context) =>
+                                                        DetailScreen(
+                                                          image: _dogAPIStore
+                                                              .dogAPI
+                                                              .message[index]
+                                                              .toString(),
+                                                          indexImage: index,
+                                                        ),
+                                                fullscreenDialog: true,
+                                              ));
+                                        },
                                       ),
                                     ),
                                   );
@@ -101,4 +128,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ));
   }
+}
+
+class CustomPageRoute extends MaterialPageRoute {
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 600);
+
+  CustomPageRoute({builder, fullscreenDialog})
+      : super(builder: builder, fullscreenDialog: fullscreenDialog);
 }
